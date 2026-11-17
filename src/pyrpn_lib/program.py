@@ -12,7 +12,7 @@ def _validate_function(program: StackProgramType) -> None:
     if not callable(program):
         raise TypeError(f"program must be callable; got {type(program).__name__}")
 
-    name = getattr(program, __name__, repr(program))
+    name = getattr(program, "__name__", repr(program))
 
     params = list(inspect.signature(program).parameters.values())
     if len(params) != 1:

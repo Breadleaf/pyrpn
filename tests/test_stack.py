@@ -1,6 +1,6 @@
 import pytest
 
-from pyrpn import Stack, StackUnderflow, add, div, dup, sub, swap, neg, sqrt, mul
+from pyrpn_lib import Stack, StackUnderflow, add, div, dup, mul, neg, sqrt, sub, swap
 
 
 def test_sub_order():

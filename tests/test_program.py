@@ -1,6 +1,6 @@
 import pytest
 
-from pyrpn import Stack, stack_function
+from pyrpn_lib import Stack, stack_function
 
 
 def test_stack_function_validation():
