@@ -2,6 +2,9 @@
 
 A type-safe, decorator-driven RPN stack library for Python
 
+[github page](https://github.com/Breadleaf/pyrpn)
+[pypi page](https://pypi.org/project/pyrpn-lib/)
+
 ## Features
 
 - Intuitive stack syntax: `<<` to push `>>` to sink
