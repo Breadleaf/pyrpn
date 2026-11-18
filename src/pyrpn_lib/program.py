@@ -8,7 +8,7 @@ StackProgramType = Callable[[Stack], None]
 
 
 def _validate_function(program: StackProgramType) -> None:
-    """Raise TypeError if `fn` isn't (Stack) -> None."""
+    """Raise TypeError if `program` isn't (Stack) -> None."""
     if not callable(program):
         raise TypeError(f"program must be callable; got {type(program).__name__}")
 
@@ -35,11 +35,11 @@ def _validate_function(program: StackProgramType) -> None:
 
     if param.name not in hints:
         raise TypeError(
-            f"program '{name}': parameter '{param.name}' needs a type annotation, expected pyrpn.Stack"
+            f"program '{name}': parameter '{param.name}' needs a type annotation, expected pyrpn_lib.Stack"
         )
     if hints[param.name] is not Stack:
         raise TypeError(
-            f"program '{name}': parameter '{param.name}' must be annotated pyrpn.Stack; got {hints[param.name]!r}"
+            f"program '{name}': parameter '{param.name}' must be annotated pyrpn_lib.Stack; got {hints[param.name]!r}"
         )
 
     if "return" not in hints:
@@ -52,18 +52,29 @@ def _validate_function(program: StackProgramType) -> None:
         )
 
 
+def _validate_stack_effect(requires: int, delta: int | None) -> None:
+    """Validate a function's declared stack contract."""
+    if isinstance(requires, bool) or not isinstance(requires, int):
+        raise TypeError("requires must be an integer")
+    if requires < 0:
+        raise ValueError("requires cannot be negative")
+    if delta is not None and (isinstance(delta, bool) or not isinstance(delta, int)):
+        raise TypeError("delta must be an integer or None")
+
+
 class StackFunction:
     """A (Stack) -> None routine that works on a stack the caller supplies."""
 
     def __init__(
-        self, fn: StackProgramType, *, takes: int = 0, returns: int | None = None
+        self, fn: StackProgramType, *, requires: int = 0, delta: int | None = None
     ) -> None:
         _validate_function(fn)
+        _validate_stack_effect(requires, delta)
         self.fn = fn
-        self.takes = takes
-        self.returns = returns
+        self.requires = requires
+        self.delta = delta
         self.__name__ = getattr(fn, "__name__", repr(fn))
-        self.__doc__ = fn.__doc__
+        self.__doc__ = getattr(fn, "__doc__", None)
 
     def call(self, stack: Stack) -> Stack:
         """Run the program on an existing stack and return that same stack."""
@@ -73,9 +84,9 @@ class StackFunction:
                 f"program '{self.__name__}' needs a stack; got {type(stack).__name__}"
             )
 
-        if len(stack) < self.takes:
+        if len(stack) < self.requires:
             raise StackUnderflow(
-                f"{self.__name__} takes {self.takes} items(s), stack has {len(stack)}"
+                f"{self.__name__} requires {self.requires} item(s), stack has {len(stack)}"
             )
 
         before = len(stack)
@@ -86,12 +97,12 @@ class StackFunction:
                 raise TypeError(
                     f"program '{self.__name__}' returned {result!r}, expected None"
                 )
-            if self.returns is not None:
-                expected = before - self.takes + self.returns
-                if len(stack) != expected:
+            if self.delta is not None:
+                actual_delta = len(stack) - before
+                if actual_delta != self.delta:
                     raise RuntimeError(
-                        f"{self.__name__} declared ({self.takes} -> {self.returns}) "
-                        f"but left {len(stack)} item(s), expected {expected}"
+                        f"{self.__name__} declared stack delta {self.delta:+d}, "
+                        f"but changed depth by {actual_delta:+d}"
                     )
         except Exception:
             stack.items[:] = snapshot
@@ -102,9 +113,11 @@ class StackFunction:
         return f"{type(self).__name__}({self.__name__})"
 
 
-def stack_function(*, takes: int = 0, returns: int | None = None) -> Callable[[StackProgramType], StackFunction]:
+def stack_function(
+    *, requires: int = 0, delta: int | None = None
+) -> Callable[[StackProgramType], StackFunction]:
     def deco(fn: StackProgramType) -> StackFunction:
-        return StackFunction(fn, takes=takes, returns=returns)
+        return StackFunction(fn, requires=requires, delta=delta)
 
     return deco
 
@@ -113,7 +126,7 @@ class StackProgram(StackFunction):
     """Wraps a (Stack) -> None function. Validated on creation; run with .run()."""
 
     def __init__(self, fn: StackProgramType) -> None:
-        super().__init__(fn, takes=0)
+        super().__init__(fn, requires=0, delta=None)
 
     def run(self, *, verbose: bool = True) -> Stack:
         if verbose:

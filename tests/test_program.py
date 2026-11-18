@@ -12,7 +12,7 @@ def test_stack_function_validation():
             pass
 
     # wrong parameter type
-    with pytest.raises(TypeError, match="must be annotated pyrpn.Stack"):
+    with pytest.raises(TypeError, match="must be annotated pyrpn_lib.Stack"):
 
         @stack_function()
         def bad_2(s: int) -> None:
@@ -41,17 +41,17 @@ def test_stack_function_validation():
 
 
 def test_stack_function_contracts():
-    @stack_function(takes=2, returns=1)
+    @stack_function(requires=2, delta=1)
     def add_two(s: Stack) -> None:
         pass
 
     s = Stack() << 1 << 2
-    with pytest.raises(RuntimeError, match="declared .* but left"):
+    with pytest.raises(RuntimeError, match="declared stack delta"):
         add_two.call(s)
 
 
 def test_stack_function_rollback():
-    @stack_function(takes=1)
+    @stack_function(requires=1)
     def crashing_func(s: Stack) -> None:
         s << 99
         raise ValueError("oops")

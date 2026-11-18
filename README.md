@@ -33,7 +33,7 @@ print(calc) # Output: Stack([7.0])
 ```
 import pyrpn as p
 
-@p.stack_function(takes=1, returns=1)
+@p.stack_function(consumes=1, produces=1)
 def add_one(s: p.Stack) -> None:
   s << 1 << p.add
 
