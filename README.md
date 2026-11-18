@@ -33,13 +33,21 @@ print(calc) # Output: Stack([7.0])
 ```
 import pyrpn as p
 
-@p.stack_function(consumes=1, produces=1)
+# function add_one (requires 1 item on stack) (will have a zero delta)
+@p.stack_function(requires=1, delta=0)
 def add_one(s: p.Stack) -> None:
   s << 1 << p.add
+
+# function destroy (requires 1 item on stack) (will have a -1 delta)
+@p.stack_function(requires=1, delta=-1)
+def destroy(s: p.Stack) -> None:
+  _ = s.items.pop()
 
 s = p.Stack() << 5
 add_one.call(s)
 print(s) # Output: Stack([6])
+destroy.call(s)
+print(s) # Output: Stack([])
 ```
 
 ### Running Standalone Programs

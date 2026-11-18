@@ -61,7 +61,7 @@ wheels = [
 
 [[package]]
 name = "pyrpn-lib"
-version = "0.1.2"
+version = "0.2.1"
 source = { editable = "." }
 
 [package.dev-dependencies]
