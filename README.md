@@ -17,7 +17,7 @@ A type-safe, decorator-driven RPN stack library for Python
 ### Basic Stack Arithmetic
 
 ```
-import pyrpn as p
+import pyrpn_lib as p
 
 # Build expressions using the shift operator
 s = p.Stack() << 5 << 3 << p.sub
@@ -31,7 +31,7 @@ print(calc) # Output: Stack([7.0])
 ### Writing Custom Stack Functions
 
 ```
-import pyrpn as p
+import pyrpn_lib as p
 
 # function add_one (requires 1 item on stack) (will have a zero delta)
 @p.stack_function(requires=1, delta=0)
@@ -53,7 +53,7 @@ print(s) # Output: Stack([])
 ### Running Standalone Programs
 
 ```
-import pyrpn as p
+import pyrpn_lib as p
 
 @p.StackProgram
 def calculate_hypotenuse(s: p.Stack) -> None:
@@ -71,7 +71,7 @@ result = calculate_hypotenuse.run()
 ### Sinking Results
 
 ```
-import pyrpn as p
+import pyrpn_lib as p
 
 results = []
 s = p.Stack() << 43
